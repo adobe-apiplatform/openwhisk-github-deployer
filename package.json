@@ -1,0 +1,51 @@
+{
+  "name": "whisk-github-deployer",
+  "version": "0.0.1",
+  "description": "Function that deploys an action in OpenWhisk from a GitHub repo",
+  "main": "./test/server/index.js",
+  "scripts": {
+    "start": "babel-watch ./test/server/index.js",
+    "test": "babel-node ./node_modules/.bin/isparta cover _mocha",
+    "test_": "mocha --compilers js:babel-register"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ddragosd/openwhisk-github-deployer.git"
+  },
+  "author": "Dragos Dascalita Haut <ddascal@adobe.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "openwhisk": "^2.3.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.16.0",
+    "babel-plugin-transform-eval": "^6.8.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-latest": "^6.16.0",
+    "babel-watch": "^2.0.2",
+    "body-parser": "^1.15.2",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "compression": "^1.6.2",
+    "cors": "^2.7.1",
+    "express": "^4.14.0",
+    "http-status": "^0.2.3",
+    "isparta": "^4.0.0",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.5.3",
+    "resource-router-middleware": "^0.6.0",
+    "supertest": "^1.1.0",
+    "supertest-as-promised": "^2.0.2"
+  },
+  "babel": {
+    "presets": [ "latest" ]
+  },
+  "bugs": {
+    "url": "https://github.com/ddragosd/openwhisk-github-deployer/issues"
+  },
+  "homepage": "https://github.com/ddragosd/openwhisk-github-deployer",
+  "keywords": [
+    "serverless, openwhisk, deploy"
+  ]
+}
