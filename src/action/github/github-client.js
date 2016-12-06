@@ -6,6 +6,7 @@ import https from 'https';
 import url from 'url';
 import util from 'util';
 import request from 'request';
+import unzip from 'unzip';
 
 export default class GitHubClient {
     constructor() {
@@ -13,12 +14,12 @@ export default class GitHubClient {
     }
 
     /**
-     * Downloads an archive from th given repository and saves it in the specificed output location.
+     * Downloads an archive from the given repository and saves it in the specified output location.
      * API Ref: https://developer.github.com/v3/repos/contents/
      *
-     * @param repository The repository object that should contains the archive_url property
-     * @param ref The ref to download
-     * @param fmt The archive format. Default: zipball or tarball
+     * @param repository The repository object that should contains the archive_url, name properties
+     * @param ref The ref to download. Default: /master
+     * @param fmt The archive format : zipball or tarball. Default: zipball
      * @param output The folder on the local disk where to save the archive
      */
     getArchive(repository, ref = "/master", fmt = "zipball", output = "./") {
@@ -33,24 +34,26 @@ export default class GitHubClient {
                     }
                 };
 
-                var tmp_file = output + "/" + repository.name + ".zip";
+                var output_path = output + "/" + repository.name;
 
                 // invoke the request
-                console.info("Downloading archive from: " + util.inspect(req_options) + ", into: " + tmp_file);
+                console.info("Downloading archive from: " + util.inspect(req_options) + ", into: " + output_path);
 
-                request(req_options)
-                    .on('error', (error) => {
+                var r = request(req_options)
+                    .on('error', (error) => { /* conn refused, timeout, etc */
+                        console.error("Error downloading archive from:" + req_options.url);
                         console.error(error);
-                        fs.unlink(tmp_file);
-                        reject(error);
-                    })
-                    .pipe(fs.createWriteStream(tmp_file));
-
-                //npm install adm-zip
-                /*var zip = new AdmZip(tmpFilePath)
-                 zip.extractAllTo("assets/extracted/" + filename)
-                 fs.unlink(tmpFilePath)*/
-                // resolve(tmp_file);
+                        reject({result: false, error: error})
+                    });
+                r.on('response', (resp) => {
+                    if (resp.statusCode == 200) {
+                        r.pipe(unzip.Extract({path: output_path}));
+                        return resolve({result: true, path: output_path});
+                    }
+                    console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
+                    // r.pipe(console.error);
+                    reject({result: false});
+                });
             }
         )
     }

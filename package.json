@@ -18,7 +18,8 @@
   "author": "Dragos Dascalita Haut <ddascal@adobe.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "openwhisk": "^2.3.0"
+    "openwhisk": "^2.3.0",
+    "unzip": "^0.1.11"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

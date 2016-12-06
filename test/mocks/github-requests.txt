@@ -1,11 +1,11 @@
-//recorded on Sun Dec 04 2016 23:12:21 GMT-0800 (PST)
+//recorded on Mon Dec 05 2016 21:16:15 GMT-0800 (PST)
 var nock = require("nock");
 nock('https://api.github.com:443', {"encodedQueryParams":true})
   .get('/repos/ddragosd/openwhisk-github-deployer/zipball/master')
   .reply(302, "", [ 'Server',
   'GitHub.com',
   'Date',
-  'Mon, 05 Dec 2016 07:12:21 GMT',
+  'Tue, 06 Dec 2016 05:16:15 GMT',
   'Content-Type',
   'text/html;charset=utf-8',
   'Content-Length',
@@ -17,13 +17,13 @@ nock('https://api.github.com:443', {"encodedQueryParams":true})
   'X-RateLimit-Limit',
   '60',
   'X-RateLimit-Remaining',
-  '60',
+  '56',
   'X-RateLimit-Reset',
-  '1480925541',
+  '1481003503',
   'Cache-Control',
   'public, must-revalidate, max-age=0',
   'Expires',
-  'Mon, 05 Dec 2016 07:12:21 GMT',
+  'Tue, 06 Dec 2016 05:16:15 GMT',
   'Location',
   'https://codeload.github.com/ddragosd/openwhisk-github-deployer/legacy.zip/master',
   'Access-Control-Expose-Headers',
@@ -43,9 +43,9 @@ nock('https://api.github.com:443', {"encodedQueryParams":true})
   'Vary',
   'Accept-Encoding',
   'X-Served-By',
-  '52189b7290fad804d77890ef34a1eeae',
+  '8166eb1845e56d99ba68a6b1065016c1',
   'X-GitHub-Request-Id',
-  '62CF359F:15602:1739696C:58451355' ]);
+  '62CF359F:15602:17F9B90D:5846499F' ]);
 var nock = require("nock");
 nock('https://codeload.github.com:443', {"encodedQueryParams":true})
   .get('/ddragosd/openwhisk-github-deployer/legacy.zip/master')
@@ -74,8 +74,8 @@ nock('https://codeload.github.com:443', {"encodedQueryParams":true})
   'X-Geo-Block-List',
   '',
   'Date',
-  'Mon, 05 Dec 2016 07:12:22 GMT',
+  'Tue, 06 Dec 2016 05:16:16 GMT',
   'X-GitHub-Request-Id',
-  '62CF359F:23C2E:E4AC9D:58451355',
+  '62CF359F:23C2E:ED40B3:5846499F',
   'Connection',
   'close' ]);
