@@ -2,12 +2,16 @@
  * Class used as a client for GitHub, implementing the operations needed by this action
  */
 import fs from 'fs';
+import fspath from 'path';
 import https from 'https';
 import url from 'url';
 import util from 'util';
 import request from 'request';
 import unzip from 'unzip';
 
+/**
+ * A client for GitHub to download a ZIP archive, unzip it and return the root folder of the archive.
+ */
 export default class GitHubClient {
     constructor() {
 
@@ -17,7 +21,7 @@ export default class GitHubClient {
      * Downloads an archive from the given repository and saves it in the specified output location.
      * API Ref: https://developer.github.com/v3/repos/contents/
      *
-     * @param repository The repository object that should contains the archive_url, name properties
+     * @param repository The repository object that should contain the archive_url, name properties
      * @param ref The ref to download. Default: /master
      * @param fmt The archive format : zipball or tarball. Default: zipball
      * @param output The folder on the local disk where to save the archive
@@ -47,14 +51,51 @@ export default class GitHubClient {
                     });
                 r.on('response', (resp) => {
                     if (resp.statusCode == 200) {
-                        r.pipe(unzip.Extract({path: output_path}));
-                        return resolve({result: true, path: output_path});
+                        r.pipe(unzip.Extract({path: output_path}))
+                            .on('close', () => {
+                                console.info("Unzip completed ...");
+                                this._getArchiveRootFolder(repository, output_path)
+                                    .then((root) => {
+                                        resolve({result: true, path: root});
+                                    })
+                                    .catch((err) => {
+                                        reject({result: false, error: err});
+                                    });
+                            });
+                    } else {
+                        console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
+                        r.pipe(process.stderr);
+                        reject({result: false});
                     }
-                    console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
-                    // r.pipe(console.error);
-                    reject({result: false});
                 });
             }
         )
+    }
+
+    /**
+     * Returns the root folder for this archive
+     * @param repository The repository object that should contain the archive_url, name properties
+     * @param p Output path where the archive has been unzipped
+     * @returns {Promise} Promise object
+     * @private
+     */
+    _getArchiveRootFolder(repository, p = './') {
+        return new Promise(
+            (resolve, reject) => {
+                fs.readdir(p, function (err, files) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    var folders = files.map((file) => {
+                        return fspath.join(p, file);
+                    }).filter((file) => {
+                        return fs.statSync(file).isDirectory() &&
+                            file.indexOf(repository.name) >= 0;
+                    });
+
+                    resolve(folders[0]);
+                });
+            });
     }
 }

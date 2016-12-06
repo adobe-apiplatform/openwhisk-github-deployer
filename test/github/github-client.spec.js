@@ -18,7 +18,7 @@ describe('Download ', () => {
         it('should be able to download the zip archive', (done) => {
             var params = {
                 "repository": {
-                    "name": "repo1",
+                    "name": "openwhisk-github-deployer",
                     "archive_url": "https://api.github.com/repos/ddragosd/openwhisk-github-deployer/{archive_format}{/ref}",
                 }
             };
@@ -33,14 +33,18 @@ describe('Download ', () => {
             var git = new github_client();
             git.getArchive(params.repository)
                 .should.be.fulfilled
-                .and.should.eventually.deep.equal({"result": true, "path": ".//repo1"})
+                .and.should.eventually.deep.equal(
+                    {
+                        "result": true,
+                        "path": "openwhisk-github-deployer/ddragosd-openwhisk-github-deployer-5a49855"
+                    })
                 .and.notify(done);
         });
 
         it('should return with error on 404', (done) => {
             var params = {
                 "repository": {
-                    "name": "repo1",
+                    "name": "INVALID",
                     "archive_url": "https://api.github.com/repos/INVALID/INVALID/{archive_format}{/ref}",
                 }
             };
