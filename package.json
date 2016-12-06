@@ -2,11 +2,14 @@
   "name": "whisk-github-deployer",
   "version": "0.0.1",
   "description": "Function that deploys an action in OpenWhisk from a GitHub repo",
-  "main": "./test/server/index.js",
+  "main": "./src/action/deployer.js",
   "scripts": {
     "start": "babel-watch ./test/server/index.js",
-    "test": "babel-node ./node_modules/.bin/isparta cover _mocha",
-    "test_": "mocha --compilers js:babel-register"
+    "test": "babel-node ./node_modules/.bin/isparta cover _mocha -- 'test/**/*.spec.js' ",
+    "test_no_cov": "mocha 'test/**/*.spec.js' --recursive --compilers js:babel-register",
+    "prepublish_": "babel src --out-file ${npm_package_name}-${npm_package_version}.js --source-maps",
+    "prepublish": "browserify -r ./src/action/deployer.js:main-action --node --no-bundle-external > ${npm_package_name}-${npm_package_version}.js && npm run whisk_wrapper",
+    "whisk_wrapper": "echo \"var main = require('main-action');\" >> ${npm_package_name}-${npm_package_version}.js"
   },
   "repository": {
     "type": "git",
@@ -15,18 +18,22 @@
   "author": "Dragos Dascalita Haut <ddascal@adobe.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "openwhisk": "^2.3.0"
+    "openwhisk": "^2.3.0",
+    "unzip": "^0.1.11"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.16.0",
-    "babel-plugin-transform-eval": "^6.8.0",
+    "babel-preset-babili": "0.0.9",
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-latest": "^6.16.0",
     "babel-watch": "^2.0.2",
+    "babelify": "^7.3.0",
     "body-parser": "^1.15.2",
+    "browserify": "^13.1.1",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
+    "cls-bluebird": "^2.0.1",
     "compression": "^1.6.2",
     "cors": "^2.7.1",
     "express": "^4.14.0",
@@ -34,12 +41,23 @@
     "isparta": "^4.0.0",
     "istanbul": "^0.3.17",
     "mocha": "^2.5.3",
+    "nock": "^9.0.2",
+    "request": "^2.79.0",
     "resource-router-middleware": "^0.6.0",
     "supertest": "^1.1.0",
     "supertest-as-promised": "^2.0.2"
   },
+  "browserify": {
+    "transform": [
+      [
+        "babelify"
+      ]
+    ]
+  },
   "babel": {
-    "presets": [ "latest" ]
+    "presets": [
+      "latest"
+    ]
   },
   "bugs": {
     "url": "https://github.com/ddragosd/openwhisk-github-deployer/issues"
