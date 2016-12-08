@@ -22,7 +22,7 @@ var script = new vm.Script(fs.readFileSync(filename, 'utf-8'));
 var context = new vm.createContext(sandbox);
 script.runInContext(context);
 
-this.userScriptMain = sandbox.main.default;
+this.userScriptMain = sandbox.main;
 if (typeof this.userScriptMain === 'function') {
     var r = this.userScriptMain({});
     console.log("RESULT:");
