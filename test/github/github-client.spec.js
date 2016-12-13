@@ -36,7 +36,7 @@ describe('Download ', () => {
                 .and.should.eventually.deep.equal(
                     {
                         "result": true,
-                        "path": "openwhisk-github-deployer/ddragosd-openwhisk-github-deployer-5a49855"
+                        "path": "openwhisk-github-deployer/ddragosd-openwhisk-github-deployer-02545eb"
                     })
                 .and.notify(done);
         });

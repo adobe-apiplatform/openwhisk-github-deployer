@@ -35,6 +35,7 @@
   }
 } **/
 import GitHubClient from './github/github-client';
+import wskdeploy from '../../src/action/wskdeploy/wskdeploy';
 
 /**
  * @param params The GitHub event
@@ -42,10 +43,31 @@ import GitHubClient from './github/github-client';
  */
 function main(params) {
     //1. download the archive
-    var git_client = new GitHubClient();
 
-    var name = params.name || "World";
-    return {payload: "Hello, " + name + "!"};
+    return new Promise(
+        (resolve, reject) => {
+            var git_client = new GitHubClient();
+
+            // TODO: read params from the source event
+            var params = {
+                "repository": {
+                    "name": "openwhisk-github-deployer",
+                    "archive_url": "https://api.github.com/repos/ddragosd/openwhisk-github-deployer/{archive_format}{/ref}",
+                }
+            };
+
+            git_client.getArchive(params.repository)
+                .then((download_result) => {
+                    var fn = new wskdeploy('manifest.yaml', download_result.path);
+                    fn.deploy().then((deploy_result) => {
+                        resolve(deploy_result);
+                    }).catch((deploy_error) => reject(deploy_error));
+                }).catch((download_error) => {
+                reject(download_error);
+            });
+        }
+    )
+
 }
 
 export default main;

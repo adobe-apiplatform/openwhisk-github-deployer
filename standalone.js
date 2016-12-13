@@ -15,7 +15,9 @@ var filename = './whisk-github-deployer-0.0.1.js';
 var sandbox = {
     require: require,
     process: process,
-    Buffer: Buffer
+    Buffer: Buffer,
+    console: console,
+    setImmediate: setImmediate
 };
 console.log("Loading:" + filename);
 var script = new vm.Script(fs.readFileSync(filename, 'utf-8'));
@@ -24,9 +26,15 @@ script.runInContext(context);
 
 this.userScriptMain = sandbox.main;
 if (typeof this.userScriptMain === 'function') {
-    var r = this.userScriptMain({});
-    console.log("RESULT:");
-    console.log(r);
+    this.userScriptMain({})
+        .then( function (result) {
+            console.log("RESULT:");
+            console.log(result);
+        }).catch( function (error) {
+            console.error(error);
+        });
+
+
 } else {
     console.log(typeof this.userScriptMain);
 }

@@ -11,7 +11,7 @@ chai.should();
 
 describe('Deploy ', () => {
     describe('from a simple manifest.yaml', function () {
-        it('should upload the function correctly', (done) => {
+        it('should read the information correctly', (done) => {
             var fn = new wskdeploy('manifest.yaml', './test/resources/hello-world-function/');
             fn._loadManifest()
                 .should.be.fulfilled
@@ -28,8 +28,18 @@ describe('Deploy ', () => {
                         }
                     }
                 }
-            });
-            done();
-        })
+            })
+                .and.notify(done);
+        });
+        it('should send the deploy info', (done) => {
+            var fn = new wskdeploy('manifest.yaml', './test/resources/hello-world-function/');
+            fn.deploy()
+                .should.be.fulfilled
+                .and.should.eventually.deep.equal(
+                    {
+
+                    }
+                    ).and.notify(done);
+        });
     })
 });

@@ -26,7 +26,7 @@ export default class WskDeploy {
                 var file_path = this.root_folder + "/" + this.manifest_file;
                 console.info("Loading function manifest from:" + file_path);
                 var doc = yaml.safeLoad(fs.readFileSync(file_path, 'utf-8'));
-                console.warn(util.inspect(doc,{depth:5}));
+                console.warn(util.inspect(doc, {depth: 5}));
                 resolve(doc);
             }
         )
@@ -47,15 +47,21 @@ export default class WskDeploy {
     }
 
     deploy() {
-        this._loadManifest()
-            .then((manifest) => {
-                console.warn(manifest);
-                // for every action in actions
-                    // this._deployAction(action)
+        return new Promise(
+            (resolve, reject) => {
+                this._loadManifest()
+                    .then((manifest) => {
+                        console.warn(manifest);
+                        resolve(manifest);
+                        // for every action in actions
+                        // this._deployAction(action)
                         // .then().catch()
-            }).catch((error) => {
+                    }).catch((error) => {
+                    reject(error);
+                });
+            }
+        )
 
-        });
     }
 
 }
