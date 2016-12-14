@@ -39,10 +39,12 @@ describe('Deploy ', () => {
             // play the recorded HTTP responses
             var mocks = require('../../test/mocks/openwhisk-requests-wskdeploy.txt');
 
-            var fn = new wskdeploy('manifest.yaml', './test/resources/hello-world-function/');
+            var fn = new wskdeploy('manifest.yaml', './test/resources/hello-world-function/', {
+                namespace: "wskdeploy-spec"
+            });
             fn.deploy()
                 .should.be.fulfilled
-                .and.should.eventually.equal("guest_helloworld")
+                .and.should.eventually.equal("wskdeploy-spec_helloworld")
                 /*.and.should.eventually.deep.equal(
                 {
                     "annotations": [],

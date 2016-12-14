@@ -10,9 +10,10 @@ import openwhisk from 'openwhisk';
  * The path to the file containing the manifest
  */
 const DEFAULT_MAINFEST = "manifest.yaml";
+const DEFAULT_NAMESPACE = "guest";
 const DEFAULT_OPENWHISK_PROPS = {
     "apihost": "localhost",
-    "namespace": "guest",
+    "namespace": DEFAULT_NAMESPACE,
     "api_key": "23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP",
     "ignore_certs": true
 };
@@ -33,9 +34,11 @@ export default class WskDeploy {
 
         // merge DEFAULT props with openwhisk_props
         let ow_props = Object.assign({}, DEFAULT_OPENWHISK_PROPS, openwhisk_props);
+        ow_props.namespace = DEFAULT_NAMESPACE;
 
         console.log("Initializing a new OpenWhisk client with :" + util.inspect(ow_props));
         this.openwhisk_client = openwhisk(ow_props);
+        this.openwhisk_client_props = ow_props;
     }
 
     _loadManifest() {
@@ -52,8 +55,9 @@ export default class WskDeploy {
     }
 
     /**
-     *
+     * Create or update a package
      * @param pckg The info about the package
+     * @returns {Promise.<T>}
      * @private
      */
     _deployPackage(pckg) {
@@ -71,17 +75,23 @@ export default class WskDeploy {
             })
     }
 
+    /**
+     * Deploy actions in OpenWhisk.
+     * @param actions One or more actions as read from the manifest
+     * @returns {Promise.<T>}
+     * @private
+     */
     _deployActions(actions) {
-        var chain = Promise.resolve();
         let action_list = Array.isArray(actions) ? actions : [actions];
+        let action_chain = [];
         action_list.forEach((action) => {
-            chain = chain.then(this._deployAction(action));
+            action_chain.push(this._deployAction(action));
         });
-        chain.catch( (error) => {
-           console.log("Error deploying action.");
-           console.log(error);
-        });
-        return chain;
+        return Promise.all(action_chain)
+            .catch((error) => {
+                console.log("Error deploying action.");
+                console.log(error);
+            });
     }
 
     /**
@@ -96,9 +106,34 @@ export default class WskDeploy {
     _deployAction(action) {
         return new Promise(
             (resolve, reject) => {
-                console.log("TODO: adding/updating a NEW action." + util.inspect(action));
-                resolve();
-                //resolve(this.openwhisk_client.actions.update(action));
+                let action_name = Object.keys(action)[0];
+                let action_info = action[action_name];
+                if (action_info === null || typeof(action_info) === "undefined") {
+                    reject("Action " + action_name + "is undefined. Action object:" + util.inspect(action));
+                    return;
+                }
+                console.log("Adding/updating action: " + action_name + ". Details:" + util.inspect(action_info));
+                let action_src_path = this.root_folder + "/" + action_info.location;
+                if (action_info.location === null || typeof(action_info.location) === "undefined") {
+                    reject("Action " + action_name + " is missing the location property. Action details:" + util.inspect(action_info));
+                    return;
+                }
+                console.log("Reading action src from " + action_src_path);
+
+                let action_src = fs.readFileSync(action_src_path, 'utf-8');
+
+                let action_qualified_name = "/" + this.openwhisk_client_props.namespace
+                    + "/" + this.manifest.package.name
+                    + "/" + action_name;
+
+                console.info("Deploying action: " + action_qualified_name + " from :" + action_src_path);
+                // FIXME: openwhisk client only supports nodejs6 "kind" of actions
+                resolve(this.openwhisk_client.actions.create({
+                        actionName: action_name,
+                        action: action_src,
+                        namespace: "/" + this.openwhisk_client_props.namespace + "/" + this.manifest.package.name
+                    })
+                );
             }
         );
 
@@ -134,7 +169,6 @@ export default class WskDeploy {
                     .then(
                         (actions_result) => {
                             console.log("Deploy actions result:" + util.inspect(actions_result));
-
                             resolve(this.manifest.package.name);
                         }, (actions_error) => {
                             console.warn("Could not deploy actions.");
@@ -142,9 +176,6 @@ export default class WskDeploy {
                             reject(actions_error);
                         }
                     )
-                    // for every action in actions
-                    // this._deployAction(action)
-                    // .then().catch()
                     .catch((error) => {
                         reject(error);
                     });
