@@ -52,13 +52,16 @@ function main(params) {
             var params = {
                 "repository": {
                     "name": "openwhisk-github-deployer",
+                    "full_name": "ddragosd/openwhisk-github-deployer",
                     "archive_url": "https://api.github.com/repos/ddragosd/openwhisk-github-deployer/{archive_format}{/ref}",
                 }
             };
 
             git_client.getArchive(params.repository)
                 .then((download_result) => {
-                    var fn = new wskdeploy('manifest.yaml', download_result.path);
+                    var fn = new wskdeploy('manifest.yaml', download_result.path, {
+                        namespace: params.repository.full_name.replace("/", "_")
+                    });
                     fn.deploy().then((deploy_result) => {
                         resolve(deploy_result);
                     }).catch((deploy_error) => reject(deploy_error));

@@ -12,6 +12,8 @@ describe('Download archive', () => {
         it('should be able to download the zip', (done) => {
             var params = {
                 "repository": {
+                    "name": "openwhisk-github-deployer",
+                    "full_name": "ddragosd/openwhisk-github-deployer",
                     "archive_url": "https://api.github.com/repos/ddragosd/openwhisk-github-deployer/{archive_format}{/ref}",
                 }
             };

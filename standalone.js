@@ -17,7 +17,8 @@ var sandbox = {
     process: process,
     Buffer: Buffer,
     console: console,
-    setImmediate: setImmediate
+    setImmediate: setImmediate,
+    global: global
 };
 console.log("Loading:" + filename);
 var script = new vm.Script(fs.readFileSync(filename, 'utf-8'));

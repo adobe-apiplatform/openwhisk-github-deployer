@@ -1,0 +1,36 @@
+//recorded on Tue Dec 13 2016 18:54:04 GMT-0800 (PST)
+var nock = require("nock");
+nock('https://localhost:443', {"encodedQueryParams":true})
+  .get('/api/v1/namespaces/guest/packages/guest_helloworld')
+  .reply(200, {"name":"guest_helloworld","binding":{},"publish":false,"annotations":[],"version":"0.0.11","actions":[],"parameters":[],"namespace":"guest","feeds":[]}, [ 'Date',
+  'Wed, 14 Dec 2016 02:54:04 GMT',
+  'Content-Type',
+  'application/json; charset=UTF-8',
+  'Content-Length',
+  '193',
+  'Connection',
+  'close',
+  'Access-Control-Allow-Origin',
+  '*',
+  'Access-Control-Allow-Headers',
+  'Authorization, Content-Type',
+  'Server',
+  'api-gateway/1.9.3.1' ]);
+var nock = require("nock");
+nock('https://localhost:443', {"encodedQueryParams":true})
+  .put('/api/v1/namespaces/guest/packages/guest_helloworld', {})
+  .query({"overwrite":"true"})
+  .reply(200, {"name":"guest_helloworld","binding":{},"publish":false,"annotations":[],"version":"0.0.12","parameters":[],"namespace":"guest"}, [ 'Date',
+  'Wed, 14 Dec 2016 02:54:04 GMT',
+  'Content-Type',
+  'application/json; charset=UTF-8',
+  'Content-Length',
+  '161',
+  'Connection',
+  'close',
+  'Access-Control-Allow-Origin',
+  '*',
+  'Access-Control-Allow-Headers',
+  'Authorization, Content-Type',
+  'Server',
+  'api-gateway/1.9.3.1' ]);

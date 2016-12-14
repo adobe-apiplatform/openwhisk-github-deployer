@@ -32,14 +32,28 @@ describe('Deploy ', () => {
                 .and.notify(done);
         });
         it('should send the deploy info', (done) => {
+            // uncomment the 2 lines bellow to automatically save a new recording for the real GitHub requests
+            // var recorder = require('../../test/mocks/github-recorder');
+            // recorder.saveAll('./test/mocks/openwhisk-requests-wskdeploy.txt');
+
+            // play the recorded HTTP responses
+            var mocks = require('../../test/mocks/openwhisk-requests-wskdeploy.txt');
+
             var fn = new wskdeploy('manifest.yaml', './test/resources/hello-world-function/');
             fn.deploy()
                 .should.be.fulfilled
-                .and.should.eventually.deep.equal(
-                    {
-
-                    }
-                    ).and.notify(done);
+                .and.should.eventually.equal("guest_helloworld")
+                /*.and.should.eventually.deep.equal(
+                {
+                    "annotations": [],
+                    "binding": {},
+                    "name": "guest_helloworld",
+                    "namespace": "guest",
+                    "parameters": [],
+                    "publish": false,
+                    "version": "0.0.5"
+                }
+            )*/.and.notify(done);
         });
     })
 });
