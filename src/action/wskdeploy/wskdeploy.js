@@ -63,15 +63,25 @@ export default class WskDeploy {
                     .then((package_result) => {
                         console.log("updating package:" + pckg.packageName);
                         resolve(this.openwhisk_client.packages.update(pckg));
-                        // .then( (package_result) => { resolve(package_result); })
-                        // .catch( (package_error) => { reject(package_error); });
                     })
                     .catch((package_error) => {
                         console.log("creating package:" + pckg.packageName);
                         resolve(this.openwhisk_client.packages.create(pckg));
                     });
             })
+    }
 
+    _deployActions(actions) {
+        var chain = Promise.resolve();
+        let action_list = Array.isArray(actions) ? actions : [actions];
+        action_list.forEach((action) => {
+            chain = chain.then(this._deployAction(action));
+        });
+        chain.catch( (error) => {
+           console.log("Error deploying action.");
+           console.log(error);
+        });
+        return chain;
     }
 
     /**
@@ -84,6 +94,13 @@ export default class WskDeploy {
      * @private
      */
     _deployAction(action) {
+        return new Promise(
+            (resolve, reject) => {
+                console.log("TODO: adding/updating a NEW action." + util.inspect(action));
+                resolve();
+                //resolve(this.openwhisk_client.actions.update(action));
+            }
+        );
 
     }
 
@@ -98,19 +115,33 @@ export default class WskDeploy {
                     .then(
                         (manifest) => {
                             // TODO: validate that the manifest has the required fields
-                            var package_name = this.namespace + "_" + manifest.package.name;
-                            return this._deployPackage({packageName: package_name});
+                            // save manifest data
+                            this.manifest = manifest;
+                            this.manifest.package.name = this.namespace + "_" + manifest.package.name;
+                            return this._deployPackage({packageName: this.manifest.package.name});
                         })
                     .then(
                         (package_result) => {
                             console.log("Deploy Package result: ");
                             console.log(package_result);
-                            resolve(package_result.name);
+                            //package_result.name
+                            return this._deployActions(this.manifest.package.actions);
                         }, (package_error) => {
-                            console.log("Error deploying the package:");
-                            console.log(package_error);
+                            console.warn("Error deploying the package:");
+                            console.warn(package_error);
                             reject(package_error);
                         })
+                    .then(
+                        (actions_result) => {
+                            console.log("Deploy actions result:" + util.inspect(actions_result));
+
+                            resolve(this.manifest.package.name);
+                        }, (actions_error) => {
+                            console.warn("Could not deploy actions.");
+                            consoler.warn(actions_error);
+                            reject(actions_error);
+                        }
+                    )
                     // for every action in actions
                     // this._deployAction(action)
                     // .then().catch()
