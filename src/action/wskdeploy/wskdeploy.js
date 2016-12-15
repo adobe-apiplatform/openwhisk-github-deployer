@@ -127,7 +127,7 @@ export default class WskDeploy {
                     + "/" + action_name;
 
                 console.info("Deploying action: " + action_qualified_name + " from :" + action_src_path);
-                // FIXME: openwhisk client only supports nodejs6 "kind" of actions
+                // NOTE: openwhisk client only supports nodejs6 "kind" of actions ATM
                 resolve(this.openwhisk_client.actions.create({
                         actionName: action_name,
                         action: action_src,
@@ -136,7 +136,6 @@ export default class WskDeploy {
                 );
             }
         );
-
     }
 
     /**

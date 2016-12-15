@@ -26,19 +26,19 @@ export default class GitHubClient {
      * @param fmt The archive format : zipball or tarball. Default: zipball
      * @param output The folder on the local disk where to save the archive
      */
-    getArchive(repository, ref = "/master", fmt = "zipball", output = "./") {
+    getArchive(repository, ref = "master", fmt = "zipball", output = "./") {
         return new Promise(
             (resolve, reject) => {
 
                 var req_options = {
-                    url: repository.archive_url.replace("{archive_format}", fmt).replace("{/ref}", ref),
+                    url: repository.archive_url.replace("{archive_format}", fmt).replace("{/ref}", "/" + ref),
                     headers: {
                         'User-Agent': 'openwhisk-github-deployer',
                         'Accept': '*/*'
                     }
                 };
 
-                var output_path = output + "/" + repository.name;
+                var output_path = output + "/" + repository.name + "/" + new Date().toISOString();
 
                 // invoke the request
                 console.info("Downloading archive from: " + util.inspect(req_options) + ", into: " + output_path);

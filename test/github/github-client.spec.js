@@ -31,12 +31,13 @@ describe('Download ', () => {
             var mocks = require('../../test/mocks/github-requests.txt');
 
             var git = new github_client();
+            let d = new Date().toISOString();
             git.getArchive(params.repository)
                 .should.be.fulfilled
                 .and.should.eventually.deep.equal(
                     {
                         "result": true,
-                        "path": "openwhisk-github-deployer/ddragosd-openwhisk-github-deployer-02545eb"
+                        "path": "openwhisk-github-deployer/" + d + "/ddragosd-openwhisk-github-deployer-02545eb"
                     })
                 .and.notify(done);
         });
