@@ -122,16 +122,14 @@ export default class WskDeploy {
 
                 let action_src = fs.readFileSync(action_src_path, 'utf-8');
 
-                let action_qualified_name = "/" + this.openwhisk_client_props.namespace
-                    + "/" + this.manifest.package.name
-                    + "/" + action_name;
+                let action_qualified_name = this.manifest.package.name + "/" + action_name;
 
                 console.info("Deploying action: " + action_qualified_name + " from :" + action_src_path);
                 // NOTE: openwhisk client only supports nodejs6 "kind" of actions ATM
-                resolve(this.openwhisk_client.actions.create({
-                        actionName: action_name,
+                resolve(this.openwhisk_client.actions.update({
+                        actionName: action_qualified_name,
                         action: action_src,
-                        namespace: "/" + this.openwhisk_client_props.namespace + "/" + this.manifest.package.name
+                        namespace: this.openwhisk_client_props.namespace
                     })
                 );
             }
