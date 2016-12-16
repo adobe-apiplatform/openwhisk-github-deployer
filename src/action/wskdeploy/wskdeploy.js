@@ -166,12 +166,19 @@ export default class WskDeploy {
                             reject(package_error);
                         })
                     .then(
+                        /**
+                         * _deployActions resolve handler
+                         * @param actions_result An array with responses from OpenWhisk, one response per action
+                         */
                         (actions_result) => {
                             console.log("Deploy actions result:" + util.inspect(actions_result));
-                            resolve(this.manifest.package.name);
+                            resolve({
+                                manifest: this.manifest,
+                                actions: actions_result
+                            });
                         }, (actions_error) => {
                             console.warn("Could not deploy actions.");
-                            consoler.warn(actions_error);
+                            console.warn(actions_error);
                             reject(actions_error);
                         }
                     )

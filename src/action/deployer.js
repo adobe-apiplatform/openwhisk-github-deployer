@@ -17,7 +17,7 @@
     "name": "apigateway",
     "full_name": "adobe-apiplatform/apigateway",
     "owner": {
-     ...
+        "name": ...
     },
     "private": false,
     "fork": false,
@@ -40,10 +40,13 @@ import wskdeploy from '../../src/action/wskdeploy/wskdeploy';
 
 /**
  * @param git_event The GitHub event.
+ * @param api_endpoint The Base URL used to invoke functions. You can use variables in the URL such as: git_org, git_repo, git_branch, package, action
  * @param manifest_file_location The folder where manifest.yaml is located. Default: ./
  * @returns {{payload: string}}
  */
-function main(git_event, manifest_file_location = "/") {
+function main(git_event,
+              api_endpoint = "https://localhost/api/v1/namespaces/guest/actions/{package}/{action}",
+              manifest_file_location = "/") {
     //1. download the archive
 
     return new Promise(
@@ -65,12 +68,38 @@ function main(git_event, manifest_file_location = "/") {
                     var fn = new wskdeploy('manifest.yaml', download_result.path + manifest_file_location, {
                         namespace: namespace
                     });
-                    fn.deploy().then((deploy_result) => {
-                        // TODO: remove the downloaded archive from the disk
-                        console.log("TODO: Removing the archive from:" + download_result.path);
-
-                        resolve(deploy_result);
-                    }).catch((deploy_error) => reject(deploy_error));
+                    fn.deploy()
+                        .then(
+                            /**
+                             * wskdeploy success handler
+                             * @param deploy_result An object like
+                             * {
+                             *   manifest: this.manifest,
+                             *   actions: actions_result
+                             * }
+                             * Where manifest is the loaded manifest
+                             * actions : is an Array of actions deployed in OpenWhisk
+                             */
+                            (deploy_result) => {
+                                console.log("deploy_result:" + util.inspect(deploy_result));
+                                // TODO: remove the downloaded archive from the disk
+                                console.log("TODO: Removing the archive from:" + download_result.path);
+                                let branch_name = git_event.ref.substr(git_event.ref.lastIndexOf("/") + 1);
+                                // TODO: provide links for all the actions in the package
+                                //       this implementation assumes there's only 1 action in the package right now
+                                if (deploy_result.actions === undefined){
+                                    reject("Could not deploy this code. deploy_result:" + util.inspect(deploy_result));
+                                    return;
+                                }
+                                resolve({
+                                    "action_endpoint": api_endpoint
+                                        .replace("{git_repo}", git_event.repository.name)
+                                        .replace("{git_org}", git_event.repository.owner.name)
+                                        .replace("{git_branch}", branch_name)
+                                        .replace("{package}", deploy_result.manifest.package.name)
+                                        .replace("{action}", deploy_result.actions[0].name)
+                                });
+                            }).catch((deploy_error) => reject(deploy_error));
                 }).catch((download_error) => {
                 reject(download_error);
             });

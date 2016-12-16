@@ -44,18 +44,36 @@ describe('Deploy ', () => {
             });
             fn.deploy()
                 .should.be.fulfilled
-                .and.should.eventually.equal("wskdeploy-spec_helloworld")
-                /*.and.should.eventually.deep.equal(
+            // .and.should.eventually.equal("wskdeploy-spec_helloworld")
+                .and.should.eventually.deep.equal(
                 {
-                    "annotations": [],
-                    "binding": {},
-                    "name": "guest_helloworld",
-                    "namespace": "guest",
-                    "parameters": [],
-                    "publish": false,
-                    "version": "0.0.5"
+                    manifest: {
+                        package: {
+                            name: 'wskdeploy-spec_helloworld',
+                            version: 1,
+                            license: 'Apache-2.0',
+                            actions: {hello: {version: 1, location: 'src/greeting.js', runtime: 'nodejs@6'}}
+                        }
+                    },
+                    actions: [{
+                        name: 'hello',
+                        publish: false,
+                        annotations: [{
+                            "key": "exec",
+                            "value": "nodejs:6"
+                        }],
+                        version: '0.0.1',
+                        exec: {
+                            kind: 'nodejs:6',
+                            code: '/**\n * Return a simple greeting message for someone.\n *\n * @param name A person\'s name.\n * @param place Where the person is from.\n */\nfunction main(params) {\n    var name = params.name || params.payload || \'stranger\';\n    var place = params.place || \'somewhere\';\n    return {payload:  \'Hello, \' + name + \' from \' + place + \'!\'};\n}',
+                            binary: false
+                        },
+                        parameters: [],
+                        limits: {timeout: 60000, memory: 256, logs: 10},
+                        namespace: 'guest/wskdeploy-spec_helloworld'
+                    }]
                 }
-            )*/.and.notify(done);
+            ).and.notify(done);
         });
     })
 });
