@@ -68,13 +68,13 @@ function main(git_event,
                     let namespace = git_event.repository.full_name.replace("/", ".");
                     namespace += "." + git_event.ref.substr(git_event.ref.lastIndexOf("/") + 1);
                     let openwhisk_opts = {
-                        apihost: api_host,
+                        apihost: git_event.api_host || api_host,
                         namespace: namespace
                     };
                     console.log("Initializing a new wskdeploy object with openwhisk_opts=" + util.inspect(openwhisk_opts));
                     var fn = new wskdeploy(
                         'manifest.yaml',
-                        download_result.path + manifest_file_location,
+                        download_result.path + (git_event.manifest_file_location || manifest_file_location),
                         openwhisk_opts);
 
                     fn.deploy()
@@ -103,8 +103,9 @@ function main(git_event,
                                         "details": deploy_result
                                     });
                                 }
+                                let rest_endpoint = git_event.api_endpoint || api_endpoint;
                                 resolve({
-                                    "action_endpoint": api_endpoint
+                                    "action_endpoint": rest_endpoint
                                         .replace("{git_repo}", git_event.repository.name)
                                         .replace("{git_org}", git_event.repository.owner.name)
                                         .replace("{git_branch}", branch_name)
