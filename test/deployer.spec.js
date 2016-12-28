@@ -37,6 +37,7 @@ describe('Deploy', () => {
 
             action(
                 /* git_event */ event,
+                /* api_host */ "localhost",
                 /* api_endpoint */ "https://localhost/api/v1/namespaces/guest/actions/{package}/{action}",
                 /* manifest_file_location */ "/test/resources/hello-world-function")
                 .should.be.fulfilled

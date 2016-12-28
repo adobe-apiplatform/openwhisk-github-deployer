@@ -66,7 +66,10 @@ export default class WskDeploy {
                 this.openwhisk_client.packages.get(pckg)
                     .then((package_result) => {
                         console.log("updating package:" + pckg.packageName);
-                        resolve(this.openwhisk_client.packages.update(pckg));
+                        // resolve(this.openwhisk_client.packages.update(pckg));
+                        // ignore for now if the package exists already
+                        resolve({"result": "package exists"});
+
                     })
                     .catch((package_error) => {
                         console.log("creating package:" + pckg.packageName);
@@ -87,11 +90,7 @@ export default class WskDeploy {
         action_list.forEach((action) => {
             action_chain.push(this._deployAction(action));
         });
-        return Promise.all(action_chain)
-            .catch((error) => {
-                console.log("Error deploying action.");
-                console.log(error);
-            });
+        return Promise.all(action_chain);
     }
 
     /**
@@ -126,12 +125,43 @@ export default class WskDeploy {
 
                 console.info("Deploying action: " + action_qualified_name + " from :" + action_src_path);
                 // NOTE: openwhisk client only supports nodejs6 "kind" of actions ATM
-                resolve(this.openwhisk_client.actions.update({
-                        actionName: action_qualified_name,
-                        action: action_src,
-                        namespace: this.openwhisk_client_props.namespace
+                let action_opts = {
+                    actionName: action_qualified_name,
+                    action: action_src,
+                    namespace: this.openwhisk_client_props.namespace
+                };
+                this.openwhisk_client.actions.update(action_opts)
+                    .then((update_result) => {
+                        resolve(update_result);
                     })
-                );
+                    .catch((update_error) => {
+                        console.warn("There was an error updating the action:" + action_opts.actionName + ". Recreating it.");
+                        console.log("update_error:" + util.inspect(update_error));
+                        // try to delete and re-create the action
+                        this.openwhisk_client.actions.delete(action_opts)
+                            .then((delete_result) => {
+                                this.openwhisk_client.actions.create(action_opts)
+                                    .then((recreate_result) => {
+                                        console.log("Recreated action:" + action_opts.actionName + ". Result:" + util.inspect(recreate_result));
+                                        resolve(recreate_result);
+                                    })
+                                    .catch((recreate_error) => {
+                                        console.warn("Could not delete/create the action:" + action_opts.actionName);
+                                        reject({
+                                            "message": "Could not recreate action:" + action_opts.actionName,
+                                            "details": util.inspect(recreate_error)
+                                        });
+                                    });
+
+                            })
+                            .catch((get_error) => {
+                                console.error("Could not retrieve action " + action_opts.actionName);
+                                reject({
+                                    "message": "Error recreating the action:" + action_opts.actionName,
+                                    "details": util.inspect(get_error)
+                                })
+                            })
+                    })
             }
         );
     }
@@ -159,7 +189,7 @@ export default class WskDeploy {
                             //package_result.name
                             return this._deployActions(this.manifest.package.actions);
                         }, (package_error) => {
-                            console.warn("Error deploying the package:");
+                            console.warn("Error updating the package:");
                             console.warn(package_error);
                             reject(package_error);
                         })
@@ -181,6 +211,7 @@ export default class WskDeploy {
                         }
                     )
                     .catch((error) => {
+                        console.error("Error deploying the package:" + util.inspect(error));
                         reject(error);
                     });
             }

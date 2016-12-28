@@ -49,6 +49,19 @@ export default class GitHubClient {
                         console.error(error);
                         reject({result: false, error: error})
                     });
+                r.on('complete', (resp, resp_body) => {
+                   if ( resp.statusCode !== 200) {
+                       console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
+                       reject({
+                           result: false,
+                           error: {
+                               message: "Error downloading archive from: " + req_options.url,
+                               response_code: resp.statusCode,
+                               response_body: resp_body
+                           }
+                       });
+                   }
+                });
                 r.on('response', (resp) => {
                     if (resp.statusCode == 200) {
                         r.pipe(unzip.Extract({path: output_path}))
@@ -62,10 +75,6 @@ export default class GitHubClient {
                                         reject({result: false, error: err});
                                     });
                             });
-                    } else {
-                        console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
-                        r.pipe(process.stderr);
-                        reject({result: false});
                     }
                 });
             }

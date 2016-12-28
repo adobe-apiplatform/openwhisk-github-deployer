@@ -40,11 +40,13 @@ import wskdeploy from '../../src/action/wskdeploy/wskdeploy';
 
 /**
  * @param git_event The GitHub event.
+ * @param api_host The hostname where the OpenWhisk API is exposed. Default: localhost.
  * @param api_endpoint The Base URL used to invoke functions. You can use variables in the URL such as: git_org, git_repo, git_branch, package, action
  * @param manifest_file_location The folder where manifest.yaml is located. Default: ./
  * @returns {{payload: string}}
  */
 function main(git_event,
+              api_host = "localhost",
               api_endpoint = "https://localhost/api/v1/namespaces/guest/actions/{package}/{action}",
               manifest_file_location = "/") {
     //1. download the archive
@@ -58,16 +60,23 @@ function main(git_event,
             }
             if (git_event.ref === null || typeof(git_event.ref) === "undefined") {
                 console.log("Missing ref property from the event. Event details:" + util.inspect(git_event));
-                git_event.ref = "/master";
+                git_event.ref = "master";
             }
 
             git_client.getArchive(git_event.repository, git_event.ref)
                 .then((download_result) => {
                     let namespace = git_event.repository.full_name.replace("/", ".");
                     namespace += "." + git_event.ref.substr(git_event.ref.lastIndexOf("/") + 1);
-                    var fn = new wskdeploy('manifest.yaml', download_result.path + manifest_file_location, {
+                    let openwhisk_opts = {
+                        apihost: api_host,
                         namespace: namespace
-                    });
+                    };
+                    console.log("Initializing a new wskdeploy object with openwhisk_opts=" + util.inspect(openwhisk_opts));
+                    var fn = new wskdeploy(
+                        'manifest.yaml',
+                        download_result.path + manifest_file_location,
+                        openwhisk_opts);
+
                     fn.deploy()
                         .then(
                             /**
@@ -87,9 +96,12 @@ function main(git_event,
                                 let branch_name = git_event.ref.substr(git_event.ref.lastIndexOf("/") + 1);
                                 // TODO: provide links for all the actions in the package
                                 //       this implementation assumes there's only 1 action in the package right now
-                                if (deploy_result.actions === undefined){
-                                    reject("Could not deploy this code. deploy_result:" + util.inspect(deploy_result));
-                                    return;
+                                if (deploy_result.actions === undefined) {
+                                    console.error("Could not deploy the code.");
+                                    reject({
+                                        "message": "Could not deploy the code.",
+                                        "details": deploy_result
+                                    });
                                 }
                                 resolve({
                                     "action_endpoint": api_endpoint
@@ -99,7 +111,14 @@ function main(git_event,
                                         .replace("{package}", deploy_result.manifest.package.name)
                                         .replace("{action}", deploy_result.actions[0].name)
                                 });
-                            }).catch((deploy_error) => reject(deploy_error));
+                            })
+                        .catch((deploy_error) => {
+                            console.error("deploy_error:" + util.inspect(deploy_error));
+                            reject({
+                                "message": "deploy_error",
+                                "details": util.inspect(deploy_error)
+                            });
+                        });
                 }).catch((download_error) => {
                 reject(download_error);
             });
