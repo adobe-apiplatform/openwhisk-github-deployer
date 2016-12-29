@@ -63,7 +63,13 @@ function main(git_event,
                 git_event.ref = "master";
             }
 
-            git_client.getArchive(git_event.repository, git_event.ref)
+            /* git_event.after should hold the SHA of the most recent commit */
+            let download_ref = git_event.after || git_event.ref;
+
+            // TODO: if git_event.after is 0000000 it means the branch has been deleted.
+            //        we should probably use the git_event.before to download the branch and delete the actions
+
+            git_client.getArchive(git_event.repository, download_ref)
                 .then((download_result) => {
                     let namespace = git_event.repository.full_name.replace("/", ".");
                     namespace += "." + git_event.ref.substr(git_event.ref.lastIndexOf("/") + 1);
