@@ -121,7 +121,7 @@ export default class WskDeploy {
 
                 let action_src = fs.readFileSync(action_src_path, 'utf-8');
 
-                let action_qualified_name = this.manifest.package.name + "/" + action_name;
+                let action_qualified_name = this.manifest.package.openwhisk_name + "/" + action_name;
 
                 console.info("Deploying action: " + action_qualified_name + " from :" + action_src_path);
                 // NOTE: openwhisk client only supports nodejs6 "kind" of actions ATM
@@ -179,8 +179,8 @@ export default class WskDeploy {
                             // TODO: validate that the manifest has the required fields
                             // save manifest data
                             this.manifest = manifest;
-                            this.manifest.package.name = this.namespace + "_" + manifest.package.name;
-                            return this._deployPackage({packageName: this.manifest.package.name});
+                            this.manifest.package.openwhisk_name = this.namespace + "_" + manifest.package.name;
+                            return this._deployPackage({packageName: this.manifest.package.openwhisk_name});
                         })
                     .then(
                         (package_result) => {

@@ -49,7 +49,8 @@ describe('Deploy ', () => {
                 {
                     manifest: {
                         package: {
-                            name: 'wskdeploy-spec_helloworld',
+                            openwhisk_name: 'wskdeploy-spec_helloworld',
+                            name: 'helloworld',
                             version: 1,
                             license: 'Apache-2.0',
                             actions: {hello: {version: 1, location: 'src/greeting.js', runtime: 'nodejs@6'}}

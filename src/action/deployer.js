@@ -49,8 +49,6 @@ function main(git_event,
               api_host = "localhost",
               api_endpoint = "https://localhost/api/v1/namespaces/guest/actions/{package}/{action}",
               manifest_file_location = "/") {
-    //1. download the archive
-
     return new Promise(
         (resolve, reject) => {
             var git_client = new GitHubClient();
@@ -62,6 +60,8 @@ function main(git_event,
                 console.log("Missing ref property from the event. Event details:" + util.inspect(git_event));
                 git_event.ref = "master";
             }
+
+            //1. download the archive
 
             /* git_event.after should hold the SHA of the most recent commit */
             let download_ref = git_event.after || git_event.ref;
@@ -103,7 +103,7 @@ function main(git_event,
                                 // TODO: provide links for all the actions in the package
                                 //       this implementation assumes there's only 1 action in the package right now
                                 if (deploy_result.actions === undefined) {
-                                    console.error("Could not deploy the code.");
+                                    console.error("Could not deploy the code. Details:" + util.inspect(deploy_result));
                                     reject({
                                         "message": "Could not deploy the code.",
                                         "details": deploy_result
@@ -115,7 +115,8 @@ function main(git_event,
                                         .replace("{git_repo}", git_event.repository.name)
                                         .replace("{git_org}", git_event.repository.owner.name)
                                         .replace("{git_branch}", branch_name)
-                                        .replace("{package}", deploy_result.manifest.package.name)
+                                        .replace("{package}", deploy_result.manifest.package.openwhisk_name)
+                                        .replace("{manifest_package}", deploy_result.manifest.package.name)
                                         .replace("{action}", deploy_result.actions[0].name)
                                 });
                             })
