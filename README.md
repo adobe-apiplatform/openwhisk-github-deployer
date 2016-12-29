@@ -22,7 +22,7 @@ The code for the function is found in [src/action/deployer.js](src/action/deploy
 
 The action is compiled in the root folder as `whisk-github-deployer-<version>.js`.
 
-#### Deploy the action in OpenWhisk
+#### Deploy the github-deployer action in OpenWhisk
 
 ```bash
 # add wsk CLI to the path
@@ -68,6 +68,14 @@ At the same time because the `git_branch` is in the URL it allows developers to 
      ```
      https://<username>:<password>@my.openwhisk.example.com/api/v1/namespaces/guest/actions/github-deployer?blocking=true
      ``` 
+     > TIP: You can make the `Payload URL` nicer to developers by creating an API Facade like `https://<username>:<password>@my.openwhisk.example.com/github/webhook` . 
+     In the API Gateway config define a new endpoint similar to the one bellow:
+     ```nginx 
+     location /github/webhook {
+        proxy_pass http://whisk_controller/api/v1/namespaces/guest/actions/github-deployer?blocking=true&result=true;
+     }
+     ```
+     
  * Via OpenWhisk feeds
     This setup provides a greater flexibility to configure a GitHub webhook to deploy an action.
 
