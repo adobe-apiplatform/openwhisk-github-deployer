@@ -113,7 +113,7 @@ function main(git_event,
                                 resolve({
                                     "action_endpoint": rest_endpoint
                                         .replace("{git_repo}", git_event.repository.name)
-                                        .replace("{git_org}", git_event.repository.owner.name)
+                                        .replace("{git_org}", (git_event.repository.owner.name || git_event.repository.owner.login))
                                         .replace("{git_branch}", branch_name)
                                         .replace("{package}", deploy_result.manifest.package.openwhisk_name)
                                         .replace("{manifest_package}", deploy_result.manifest.package.name)
