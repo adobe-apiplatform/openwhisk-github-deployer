@@ -14,4 +14,3 @@ package:
         param2:
           type: String
           description: Another parameter for the action
-

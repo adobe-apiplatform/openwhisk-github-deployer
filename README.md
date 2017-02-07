@@ -95,4 +95,71 @@ At the same time because the `git_branch` is in the URL it allows developers to 
    curl -X POST <action_endpoint>
    ```
 
+### Adding default parameters to actions 
 
+Actions may be configured with default parameters. They can be used to set credentials needed to communicate with other services, i.e. api keys, client secrets, tokens, etc, information that shouldn't be committed in the source code.
+
+An easy way to define default parameters using webhooks is to pass them as query parameters in the webhook URL. 
+The API Gateway can read them from the query string and pass them to the github-deployer action.
+The manifest.yaml should also explicitely define the parameters for actions. If there's a match with a query string parameters in the webhook URL then its value is used to configure a default parameter for the action. 
+ 
+An example to illustrate this:
+ 
+```yaml
+package:
+  name: helloworld
+  version: 1.0
+  license: Apache-2.0
+  actions:
+    hello:
+      version: 1.0
+      location: src/greeting.js
+      runtime: nodejs@6
+      inputs:
+        param1:
+          type: String
+          description: A parameter for the action
+        param2:
+          type: String
+          description: Another parameter for the action
+
+``` 
+ 
+This yaml defines the `hello` function with 2 input parameters: `param1`, `param2`.
+ 
+ To set a default value for `param1` add a query string to the webhook URL. For example : 
+ 
+ ```
+https://my.openwhisk.example.com/github/webhook?param1=value1
+```
+
+ The webhook URL configuration in the API Gateway:
+ 
+```nginx
+location /github/webhook {
+        lua_need_request_body on;
+        access_by_lua_block {
+                local cjson = require "cjson"
+                --1. read request body as JSON
+                ngx.req.read_body()
+                local data = ngx.req.get_body_data()
+                local json_data = {}
+
+                if (data ~= nil and #data > 0 ) then
+                    json_data = assert( cjson.decode(data), "Could not read body as JSON:" .. tostring(data))
+                end
+
+                --2. pass in default parameters to the action
+                local args = ngx.req.get_uri_args()
+                json_data.parameters = args
+
+                --3. update the body data
+                local new_body = assert( cjson.encode(json_data),  "Could not set body as JSON")
+                ngx.req.set_body_data(new_body)
+       }
+       
+       set $backend http://whisk_controller/api/v1/namespaces/guest/actions/github-deployer;
+       proxy_pass $backend?blocking=true&result=true;
+}
+```
+ 
