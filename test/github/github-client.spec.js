@@ -32,13 +32,9 @@ describe('Download ', () => {
 
             var git = new github_client();
             let d = new Date().toISOString();
-            git.getArchive(params.repository)
+            git.getArchive(params.repository, "master", "zipball", "./target")
                 .should.be.fulfilled
-                .and.should.eventually.deep.equal(
-                    {
-                        "result": true,
-                        "path": "openwhisk-github-deployer/" + d + "/ddragosd-openwhisk-github-deployer-02545eb"
-                    })
+                .and.should.eventually.have.property("path").to.match(/^target\/openwhisk-github-deployer-\w+\/ddragosd-openwhisk-github-deployer-\w+$/)
                 .and.notify(done);
         });
 
@@ -58,7 +54,7 @@ describe('Download ', () => {
             var mocks = require('../../test/mocks/github-requests-404.txt');
 
             var git = new github_client();
-            git.getArchive(params.repository)
+            git.getArchive(params.repository, "master", "zipball", "./target")
                 .should.be.rejected
                 .and.notify(done);
         });
@@ -71,7 +67,7 @@ describe('Download ', () => {
                 }
             };
             var git = new github_client();
-            git.getArchive(params.repository)
+            git.getArchive(params.repository, "master", "zipball", "./target")
                 .should.be.rejected
                 .and.notify(done);
         });

@@ -37,34 +37,48 @@ export default class GitHubClient {
                         'Accept': '*/*'
                     }
                 };
-
-                var output_path = output + "/" + repository.name + "/" + new Date().toISOString();
+                var output_path = fs.mkdtempSync(output + "/" + repository.name + "-");
+                // var output_path = output + "/" + repository.name + "/" + new Date().toISOString();
+                var tmp_archive_file = output_path + "/" + repository.name + ".zip";
 
                 // invoke the request
                 console.info("Downloading archive from: " + util.inspect(req_options) + ", into: " + output_path);
 
-                var r = request(req_options)
-                    .on('error', (error) => { /* conn refused, timeout, etc */
-                        console.error("Error downloading archive from:" + req_options.url);
-                        console.error(error);
-                        reject({result: false, error: error})
-                    });
-                r.on('complete', (resp, resp_body) => {
-                   if ( resp.statusCode !== 200) {
-                       console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
-                       reject({
-                           result: false,
-                           error: {
-                               message: "Error downloading archive from: " + req_options.url,
-                               response_code: resp.statusCode,
-                               response_body: resp_body
-                           }
-                       });
-                   }
-                });
-                r.on('response', (resp) => {
-                    if (resp.statusCode == 200) {
-                        r.pipe(unzip.Extract({path: output_path}))
+
+                var file = fs.createWriteStream(tmp_archive_file)
+                    .on('open', () => {
+                        var r = request(req_options)
+                            .on('error', (error) => { /* conn refused, timeout, etc */
+                                console.error("Error downloading archive from:" + req_options.url);
+                                console.error(error);
+                                fs.unlink(tmp_archive_file);
+                                reject({result: false, error: error})
+                            });
+                        r.on('complete', (resp, resp_body) => {
+                            console.log("GitHub request: complete() handler with statusCode=" + resp.statusCode);
+                            if (resp.statusCode !== 200) {
+                                console.error("Error downloading archive from:" + req_options.url + " code=" + resp.statusCode);
+                                reject({
+                                    result: false,
+                                    error: {
+                                        message: "Error downloading archive from: " + req_options.url,
+                                        response_code: resp.statusCode,
+                                        response_body: resp_body
+                                    }
+                                });
+                            }
+                        });
+                        r.on('response', (resp) => {
+                            console.log("GitHub request: response() handler with statusCode=" + resp.statusCode);
+                            if (resp.statusCode == 200) {
+                                r.pipe(file);
+                            }
+                        });
+                    })
+                    .on('finish', () => {
+                        console.log("Saved archive in :" + tmp_archive_file);
+                        fs.createReadStream(tmp_archive_file)
+                            .pipe(unzip.Extract({path: output_path}))
                             .on('close', () => {
                                 console.info("Unzip completed ...");
                                 this._getArchiveRootFolder(repository, output_path)
@@ -74,9 +88,8 @@ export default class GitHubClient {
                                     .catch((err) => {
                                         reject({result: false, error: err});
                                     });
-                            });
-                    }
-                });
+                            })
+                    });
             }
         )
     }
