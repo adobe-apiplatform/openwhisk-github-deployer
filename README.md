@@ -2,6 +2,7 @@ OpenWhisk GitHub Deployer
 ==========================
 
 [![CircleCI](https://circleci.com/gh/adobe-apiplatform/openwhisk-github-deployer.svg?style=svg)](https://circleci.com/gh/adobe-apiplatform/openwhisk-github-deployer)
+[![codecov](https://codecov.io/gh/adobe-apiplatform/openwhisk-github-deployer/branch/master/graph/badge.svg)](https://codecov.io/gh/adobe-apiplatform/openwhisk-github-deployer)
 [![Coverage Status](https://coveralls.io/repos/github/adobe-apiplatform/openwhisk-github-deployer/badge.svg)](https://coveralls.io/github/adobe-apiplatform/openwhisk-github-deployer)
 
 Serverless function that can automatically create/update OpenWhisk actions on each git-push based on a [manifest.yaml](test/resources/hello-world-function/manifest.yaml) file.
