@@ -6,7 +6,6 @@
   "scripts": {
     "start": "babel-watch ./test/server/index.js",
     "test": "rm -rf target openwhisk-github-deployer-* && mkdir -p target && babel-node ./node_modules/.bin/isparta cover _mocha -- 'test/**/*.spec.js' ",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test_no_cov": "rm -rf target openwhisk-github-deployer-* && mkdir -p target && mocha 'test/**/*.spec.js' --recursive --compilers js:babel-register",
     "prepublish_": "babel src --out-file ${npm_package_name}-${npm_package_version}.js --source-maps",
     "prepublish": "browserify -r ./src/action/deployer.js:main-action --node > ${npm_package_name}-${npm_package_version}.js && npm run whisk_wrapper",
@@ -37,7 +36,6 @@
     "cls-bluebird": "^2.0.1",
     "compression": "^1.6.2",
     "cors": "^2.7.1",
-    "coveralls": "^2.13.1",
     "express": "^4.14.0",
     "http-status": "^0.2.3",
     "isparta": "^4.0.0",
