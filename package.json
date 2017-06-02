@@ -22,7 +22,6 @@
     "unzip": "^0.1.11"
   },
   "devDependencies": {
-    "openwhisk": "^2.3.0",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.16.0",
     "babel-preset-babili": "0.0.9",
@@ -43,10 +42,10 @@
     "istanbul": "^0.3.17",
     "mocha": "^2.5.3",
     "nock": "^9.0.2",
+    "openwhisk": "^2.3.0",
     "request": "^2.79.0",
     "resource-router-middleware": "^0.6.0",
-    "supertest": "^1.1.0",
-    "supertest-as-promised": "^2.0.2"
+    "supertest": "^3.0.0"
   },
   "browserify": {
     "transform": [
