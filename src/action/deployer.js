@@ -81,7 +81,9 @@ function main(git_event,
                     var fn = new wskdeploy(
                         'manifest.yaml',
                         download_result.path + (git_event.manifest_file_location || manifest_file_location),
-                        openwhisk_opts);
+                        openwhisk_opts,
+                        git_event.parameters
+                    );
 
                     fn.deploy()
                         .then(

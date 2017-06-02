@@ -18,6 +18,12 @@ node_modules
 server_old
 public
 
+target
+coverage
+
+*.iml
+openwhisk-github-deployer-*
+
 # OS generated stuff
 .DS_Store
 .DS_Store?
